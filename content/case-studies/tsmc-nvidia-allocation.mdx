@@ -1,0 +1,106 @@
+---
+title: TSMC–Nvidia Capacity Allocation
+tagline: A linear program for who gets the wafers — and, more usefully, what each bottleneck is actually worth.
+pillar: Growth Optimization
+role: Modeling and sensitivity analysis
+timeframe: 2025
+order: 6
+stack:
+  - Linear programming
+  - Gurobi
+  - Sensitivity analysis
+  - Python
+chart: shadow-price
+chartCaption: Marginal value of one more unit of each constraint. Only three bind — and relaxing the top one is worth roughly nine times as much as relaxing the third.
+metrics:
+  - value: 3
+    label: Constraints that actually bind the solution
+  - value: 9
+    suffix: "×"
+    label: Value gap between the top and third bottleneck
+  - value: 2
+    label: Constraints with slack — stop spending there
+marketerMove: Find your binding constraint before you optimize anything else. Effort spent on a constraint with slack returns exactly zero.
+---
+
+## Challenge
+
+Allocate scarce advanced-node and packaging capacity across products with
+different margins, different volumes, and different strategic weight.
+
+This is the canonical constrained-resource problem. Demand exceeds supply, every
+product line has a credible claim, and the usual resolution is proportional
+fairness — give everyone a percentage of what they asked for. It feels
+equitable and it is reliably the worst available answer, because it ignores
+which products are actually constrained by which input.
+
+## Insight
+
+The allocation is not the interesting output. The shadow prices are.
+
+Solving the LP tells you how to split today's capacity. The dual values tell you
+something much more actionable: what one additional unit of each constrained
+resource is worth. In this formulation only three constraints bind at all, and
+the top one is worth roughly nine times the third.
+
+That reorders the entire strategy. Two of the five constraints have slack —
+meaning every dollar and every hour of engineering attention spent relieving
+them returns precisely nothing. Most organizations spend heavily on whichever
+bottleneck is most visible rather than the one that's binding, and an LP's dual
+values are the cheapest possible correction to that instinct.
+
+<Chart
+  name="shadow-price"
+  label="Marginal value of relief"
+  caption="Marginal value of one more unit of each constraint. Only three bind — and relaxing the top one is worth roughly nine times as much as relaxing the third."
+/>
+
+{/* TODO(raymond): replace with your real shadow prices and units from the
+    LP output (content/chart-data.ts). */}
+
+## Approach
+
+- **Formulate explicitly.** Decision variables as units allocated per product,
+  objective as total contribution margin, constraints as capacity at each stage
+  of the process. Writing the model down is itself a deliverable — it forces
+  every stakeholder's implicit assumption into a single line of algebra where
+  it can be argued about.
+- **Solve, then immediately interrogate.** The optimal objective value is the
+  least interesting number the solver returns. Duals, slacks, and reduced costs
+  are where the decisions are.
+- **Sensitivity analysis over point answers.** How far can a margin assumption
+  move before the allocation changes? If the optimum flips on a 2% change in an
+  input you estimated by hand, the real finding is "go measure that input."
+- **Reported as a decision brief, not a solver log.** Three binding
+  constraints, their marginal values, and a ranked list of what to buy next.
+
+## Impact
+
+A defensible allocation, and a ranked shopping list of bottlenecks with a dollar
+value attached to each.
+
+The sensitivity work was what made it credible. Any allocation model can produce
+a confident-looking table; being able to say "this answer holds unless margins
+move more than *x*" is what lets someone commit to it.
+
+{/* TODO(raymond): add the real margin uplift vs. proportional allocation
+    and the actual constraint names and units. */}
+
+## What a marketer would do with this
+
+**Identify the binding constraint first.** Every growth team has one — creative
+production, sales capacity, inventory, approvals, or a channel that's already
+saturated. Pouring budget past a binding constraint doesn't buy growth, it buys
+queue. And effort spent on a constraint with slack is pure waste, no matter how
+loudly it's complained about.
+
+**Translate shadow prices into marketing language.** The marginal value of
+one more unit of capacity is the marginal value of one more creative
+variant, one more SDR, or one more unit of stock. It converts
+"we need more resources" into "the next unit of this is worth $42k and the next
+unit of that is worth $5k."
+
+**Refuse proportional fairness.** Giving every channel or region a flat share of
+a constrained budget guarantees you underfund the ones where the next dollar
+compounds. Fairness is a people problem; allocation is a math problem. Solve
+them separately.

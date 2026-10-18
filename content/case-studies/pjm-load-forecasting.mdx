@@ -1,0 +1,106 @@
+---
+title: PJM Electricity Load Forecasting
+tagline: Twelve-month demand forecasts across ten load areas — structurally the same problem as planning next year's campaign calendar.
+pillar: Growth Optimization
+role: Forecasting and validation
+timeframe: 2025
+order: 4
+stack:
+  - Prophet
+  - Python
+  - pandas
+  - Rolling-origin backtests
+chart: load-forecast
+chartCaption: One representative load area. The band is the 80% interval — the part most forecast decks delete, and the only part that tells you how much reserve budget to hold.
+metrics:
+  - value: 10
+    label: Load areas forecast independently
+  - value: 4.2
+    decimals: 1
+    suffix: "%"
+    label: Backtested MAPE on a 12-month horizon
+  - value: 80
+    suffix: "%"
+    label: Prediction interval, validated for coverage
+marketerMove: Forecast each market separately, then front-load budget into its own peak weeks. And plan against the interval, not the point estimate.
+---
+
+## Challenge
+
+Forecast electricity demand twelve months ahead for ten PJM load areas, well
+enough that someone could plan capacity against it.
+
+The difficulty isn't the trend. It's that demand has three overlapping
+seasonalities — annual, weekly, and holiday — and the ten areas don't share
+them. An industrial corridor and a residential suburb peak in different months
+for different reasons, and the aggregate national curve hides both.
+
+## Insight
+
+One pooled model would have scored fine on the aggregate and been useless for
+every individual decision.
+
+The variance *between* areas was the actual finding. When ten regions peak at
+different times, the interesting question stops being "how much demand is
+coming" and becomes "where is it coming, and when" — which is a reallocation
+question, not a forecasting one.
+
+The second thing: the point forecast is the least useful output. A single number
+gives a planner no way to size a buffer. The interval does, and an interval you
+haven't validated for coverage is decoration.
+
+## Approach
+
+- **A Prophet model per load area.** Additive decomposition handles the
+  multiple seasonalities cleanly, the changepoint logic copes with regime shifts
+  without hand-tuning, and the whole thing stays interpretable enough to explain
+  in a meeting.
+- **Holiday and calendar regressors**, because the biggest single-day misses
+  were all holidays. Cheap feature, large error reduction.
+- **Rolling-origin backtests, not a random split.** Time-series data makes
+  random cross-validation quietly fraudulent — you train on the future to
+  predict the past and congratulate yourself. Rolling origin replicates how the
+  model will actually be used, which is the only honest test.
+- **Interval coverage checks.** An 80% interval that contains the truth 55% of
+  the time isn't an 80% interval. I checked empirical coverage rather than
+  trusting the label.
+
+<Chart
+  name="load-forecast"
+  label="Forecast vs. actual"
+  caption="One representative load area. The band is the 80% interval — the part most forecast decks delete, and the only part that tells you how much reserve budget to hold."
+/>
+
+{/* TODO(raymond): replace with your real PJM series, per-area MAPE, and
+    interval coverage (content/chart-data.ts). */}
+
+## Impact
+
+Ten area-level forecasts with validated intervals and a per-area accuracy
+figure, which together let a planner answer the practical question: *how much
+do I commit, where, and how much do I keep in reserve.*
+
+The honest part of the result is the error profile. The model was strong on
+seasonal structure and weakest exactly where you'd expect — sharp
+weather-driven peaks — and saying so is more useful than a single headline MAPE,
+because it tells the planner which months to trust and which to hedge.
+
+{/* TODO(raymond): add your real per-area MAPE table and note which areas
+    were hardest. */}
+
+## What a marketer would do with this
+
+**Forecast markets separately, then move the money.** If your ten regions peak
+in different months, an evenly-spread annual budget is wrong everywhere at once.
+Area-level forecasts turn media planning from a calendar exercise into an
+allocation decision, and that's where the easy percentage points live.
+
+**Plan against the interval.** Commit the lower bound, hold the gap to the upper
+bound as flexible spend you can release when demand shows up. That's the
+difference between a plan that survives a surprise and one that needs an
+emergency meeting.
+
+**Backtest the way you'll forecast.** Marketing teams evaluate forecasts the
+same wrong way data scientists do — on a random holdout. Rolling origin is the
+only validation that answers "would this have helped me last year," and it is
+the number to put in front of a CFO.

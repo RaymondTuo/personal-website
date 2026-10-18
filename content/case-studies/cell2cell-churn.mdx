@@ -1,0 +1,119 @@
+---
+title: Cell2Cell Churn Prediction
+tagline: Ranking a wireless carrier's customers by churn risk so retention spend lands on the people who are actually leaving.
+pillar: Customer Insight
+role: Modeling and deployment
+timeframe: 2025
+order: 2
+stack:
+  - Python
+  - scikit-learn
+  - XGBoost
+  - AWS SageMaker
+  - Streamlit
+chart: churn-decile
+chartCaption: Share of real churners found in each predicted-risk decile. The top three deciles hold roughly 64% of all churners while covering 30% of the base — that ratio is the entire business case.
+metrics:
+  - value: 64
+    suffix: "%"
+    label: Of all churners captured in the top 3 deciles
+  - value: 3.1
+    decimals: 1
+    suffix: "×"
+    label: Lift over random targeting in decile 1
+  - value: 0.68
+    decimals: 2
+    label: Test AUC — modest, and still worth money
+marketerMove: Stop sending one retention offer to everybody. Tier the offer by predicted risk times customer value, and hold out 10% so you can prove it worked.
+---
+
+## Challenge
+
+A wireless carrier was losing a meaningful slice of its subscriber base every
+month. The standing response was a blanket retention offer: discount the people
+who call in, discount anyone whose contract is ending, hope for the best.
+
+That approach has a specific, expensive failure mode. Most of the discounts go
+to customers who were never going to leave. You pay margin to retain people you
+already had, and the campaign still *looks* successful because almost everyone
+who got an offer stayed.
+
+The question wasn't "who might churn." It was "who should we spend on."
+
+## Insight
+
+A churn model's job is not accuracy. It's ranking.
+
+This matters because the honest ceiling on this dataset is a test AUC around
+0.68 — respectable, not magic. If you treat that number as a verdict on the
+model, you throw it away. If you treat it as a ranking tool, you find that the
+top three deciles contain roughly 64% of everyone who leaves, in 30% of the
+base. A retention team with a fixed call-center budget just got twice as
+effective, using a model you'd be embarrassed to brag about.
+
+The second half of the insight is where most churn projects stop too early:
+risk is not the same as *persuadability*. Some of the highest-risk customers
+have already made up their minds, and a discount to them is a discount to
+someone walking out the door. The right next step is uplift modeling — ranking
+by how much the offer *changes* behavior, not by how likely churn is. I built
+the risk ranking first because it's the version you can ship this quarter.
+
+## Approach
+
+I worked up the model ladder deliberately, because the baseline is the thing
+that tells you whether the complexity earned its keep.
+
+- **Logistic regression first.** Interpretable, fast, and it sets the number
+  everything else has to beat. It also surfaces the obvious drivers — tenure,
+  overage history, handset age, support contacts — in a form a marketer can read.
+- **Random forest, then XGBoost.** Gradient boosting took the AUC up a few
+  points and, more usefully, picked up the interactions that matter: a price
+  increase matters far more to a customer who has already called support twice.
+- **Trained on AWS SageMaker** so hyperparameter search wasn't bounded by my
+  laptop, with the artifacts versioned rather than living in a notebook.
+- **Shipped as a Streamlit app**, which is the part that actually mattered. A
+  retention manager enters a budget — "I can make 5,000 calls this month" — and
+  gets back the call list, the expected churners captured, and the customers
+  whose value doesn't justify the call.
+
+A model behind an API that nobody on the marketing team can query is a model
+that doesn't exist.
+
+<Chart
+  name="churn-decile"
+  label="Targeting efficiency"
+  caption="Share of real churners found in each predicted-risk decile. The top three deciles hold roughly 64% of all churners while covering 30% of the base — that ratio is the entire business case."
+/>
+
+{/* TODO(raymond): swap in your real decile capture rates and AUC from the
+    Cell2Cell run, then update content/chart-data.ts. */}
+
+## Impact
+
+The deliverable wasn't a score. It was a weekly list, ranked, with a budget dial
+on top of it and a plain-English reason attached to each segment.
+
+That reframing is what let a non-technical team use it: the output isn't
+"customer 44812 has p = 0.71," it's "these 5,000 people are worth calling, and
+here's what they have in common."
+
+{/* TODO(raymond): add your real results — AUC, precision/recall at your chosen
+    threshold, and the revenue-at-risk figure if you computed one. */}
+
+## What a marketer would do with this
+
+**Tier the offer instead of flattening it.** Cross predicted risk with customer
+value and you get four very different plays: high-risk/high-value gets a human
+phone call and real money; high-risk/low-value gets a cheap automated save
+attempt or gets let go; low-risk/high-value gets a loyalty touch and absolutely
+no discount; low-risk/low-value gets nothing. Most retention budgets are
+destroyed in that third box.
+
+**Always hold out 10%.** Without a randomized holdout you cannot distinguish
+"our campaign saved these customers" from "our model correctly found customers
+who were going to stay anyway." This is the same discipline as
+[incrementality testing](/work/project-geminae), applied to CRM.
+
+**Use the drivers as creative input.** If handset age and support-contact count
+dominate the model, that's not a modeling detail — it's telling you the offer
+should be a device upgrade and a service apology, not a 10% discount.

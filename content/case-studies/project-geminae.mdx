@@ -1,0 +1,123 @@
+---
+title: Project Geminae
+tagline: A prediction pipeline with a good R² that couldn't answer the only question the client had — what happens if we change something.
+pillar: Measurement & Attribution
+role: Business analyst and client liaison
+timeframe: Jan 2026 — Apr 2026
+order: 3
+stack:
+  - Double ML
+  - DoWhy
+  - Python
+  - Causal DAGs
+  - Dashboarding
+chart: causal-estimate
+chartCaption: One driver, estimated four ways. The raw correlation is roughly 3.5× the orthogonalized causal estimate — the gap is what a naive attribution model would have claimed as its own contribution.
+metrics:
+  - value: 3.5
+    decimals: 1
+    suffix: "×"
+    label: Overstatement in the naive estimate vs. Double ML
+  - value: 4
+    label: DoWhy refutation tests the estimate had to survive
+  - value: 1
+    label: Dashboard that made all of it legible to non-modelers
+marketerMove: Treat last-click like the raw correlation it is. Build the DAG, orthogonalize, and refuse to report a lift number that hasn't survived a placebo test.
+---
+
+## Challenge
+
+My CMU capstone team inherited a working seismicity prediction pipeline. It fit
+the data well. The R² was good. The client was, reasonably, pleased with it.
+
+And it could not answer their actual question, which was never "what will
+happen" but "what happens *if we change this*."
+
+That gap is the most common and most expensive failure in applied analytics. A
+model can be excellent at describing the world it was trained on and completely
+useless for deciding anything, and nothing in the standard metrics will warn
+you.
+
+## Insight
+
+R² rewards a model for explaining the past. Decisions require a counterfactual.
+
+Those are different mathematical objects, and a high score on the first tells
+you almost nothing about the second. A variable can be the strongest predictor
+in the model and have zero causal effect — it just happens to sit downstream of
+something that does.
+
+The practical consequence: before touching the model I had to establish what
+the model was *for*, and define success in terms a decision-maker would
+recognize. We replaced "maximize R²" with a short list of decision-relevant
+metrics — calibration, performance in the tail that actually matters, and the
+stability of effect estimates under stress.
+
+<Chart
+  name="causal-estimate"
+  label="Correlation vs. causation"
+  caption="One driver, estimated four ways. The raw correlation is roughly 3.5× the orthogonalized causal estimate — the gap is what a naive attribution model would have claimed as its own contribution."
+/>
+
+{/* TODO(raymond): replace with your real ATE estimates and confidence
+    intervals from the Geminae DML run (content/chart-data.ts). */}
+
+## Approach
+
+- **Draw the DAG before writing code.** Half the value was forcing an explicit
+  statement of what we believed caused what. Confounders you haven't named are
+  confounders you haven't controlled for, and a diagram makes disagreements
+  visible in a meeting rather than buried in a regression.
+- **Double machine learning for the estimate.** Orthogonalization lets flexible
+  models handle the nuisance functions — all the messy nonlinear confounding —
+  while keeping a clean, debiased estimate of the effect itself. You get ML
+  flexibility without ML's tendency to launder correlation as insight.
+- **Nonlinear enhancements to the existing pipeline**, so the comparison was
+  fair: the causal estimate had to beat a strengthened baseline, not a
+  strawman.
+- **DoWhy refutation tests, as a gate.** Placebo treatment, random common
+  cause, data-subset stability, unobserved-confounder sensitivity. An estimate
+  that doesn't survive refutation doesn't get reported. This is the step that
+  separates a causal *claim* from a causal *result*.
+- **A dashboard connected to the pipeline**, because I was also the primary
+  client liaison. Every number a stakeholder would be asked to act on needed a
+  place where they could see it, interrogate it, and arrive at the meeting
+  already informed.
+
+## Impact
+
+The headline finding was a correction, not a discovery: the effect the original
+pipeline implied was roughly three and a half times larger than the effect that
+survived orthogonalization and refutation.
+
+Delivering that is awkward — you're telling a client their existing numbers
+overstate things. It's also the single most valuable thing an analyst can do,
+because every downstream decision sized against the inflated number was
+mis-sized.
+
+I ran client correspondence, scheduling, and the internal team's
+communication alongside the modeling, which meant the finding arrived as a
+conversation we'd been building toward rather than a surprise in a final
+deck.
+
+{/* TODO(raymond): add the real headline finding and any quantified
+    decision change once the capstone is final. */}
+
+## What a marketer would do with this
+
+This project *is* marketing attribution with the labels swapped.
+
+**Last-click is the raw correlation bar.** It's the top bar in that chart:
+technically accurate about what it measures, and systematically overstating the
+channel that happens to sit closest to the conversion. Every channel claiming
+the same sale is a confounding problem, not a reporting problem.
+
+**Geo holdouts and PSA tests are the DAG.** When you can randomize, randomize —
+a geo-split holdout settles in three weeks what six months of MMM debate won't.
+When you can't randomize, Double ML on observational data is the honest
+fallback, and it belongs next to the MMM rather than instead of it.
+
+**Make refutation a reporting standard.** Before anyone presents an
+incrementality number, it should have survived a placebo: run the same analysis
+on a period or audience where the campaign didn't run. If it still shows lift,
+the number is measuring your methodology, not your marketing.

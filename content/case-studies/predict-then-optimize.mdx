@@ -1,0 +1,108 @@
+---
+title: Predict-then-Optimize Portfolio
+tagline: Machine-learning forecasts feeding a Gurobi optimizer — the exact shape of a media-mix decision, with the asset names changed.
+pillar: Growth Optimization
+role: End-to-end pipeline
+timeframe: 2025
+order: 5
+stack:
+  - Python
+  - scikit-learn
+  - Gurobi
+  - Quadratic programming
+chart: allocation
+chartCaption: Even split versus the optimizer's allocation under the same constraints. The optimizer's answer is less balanced and better — and it only moves where the predicted edge survives the risk penalty.
+metrics:
+  - value: 2
+    label: Stages — predict, then optimize, never merged
+  - value: 5
+    label: Assets allocated under hard constraints
+  - value: 31
+    suffix: "%"
+    label: Largest single position the constraints permit
+marketerMove: Treat budget allocation as a constrained optimization, not a spreadsheet argument. Set floors, ceilings, and turnover limits, then let the optimizer place the rest.
+---
+
+## Challenge
+
+Build something that doesn't just predict which assets will do well, but decides
+how much of a finite budget goes into each one.
+
+The distinction sounds academic until you've watched a team do the first half
+and stop. A ranked list of predicted winners is not an allocation. The moment
+you have constraints — minimums, maximums, risk tolerance, how much you're
+willing to change from last period — the ranking stops being enough, and
+"just put the money in the top one" is a strategy that works until it
+spectacularly doesn't.
+
+## Insight
+
+Prediction accuracy and decision quality are different objectives, and
+optimizing the first does not reliably improve the second.
+
+A slightly worse model inside a well-constrained optimizer beats a better model
+with no constraints, almost every time. The reason is error asymmetry: the
+optimizer is not equally sensitive to every mistake. Being wrong about an asset
+you were going to hold at its floor anyway costs nothing. Being wrong about the
+one the optimizer wants to overweight costs everything. So the model should be
+evaluated on the errors that move the allocation — which is a different loss
+function than the one it was trained on.
+
+That also means the two stages have to stay separate. Merging them is tempting
+and it destroys your ability to debug: when the allocation looks wrong you need
+to know whether the forecast was bad or the constraints were.
+
+## Approach
+
+- **Stage one: classifiers predict direction and probability.** Calibrated
+  probabilities, not raw scores — the optimizer consumes these as expected
+  values, so a miscalibrated 0.8 does real damage downstream.
+- **Stage two: a quadratic program in Gurobi.** Maximize expected return minus a
+  risk penalty built from the covariance matrix. The quadratic term is what
+  stops the optimizer from piling into correlated bets that look independent on
+  a spreadsheet.
+- **Constraints as the expression of strategy.** Per-asset floors and ceilings,
+  total budget, and a turnover limit so the allocation can't whipsaw every
+  period. These aren't technical details; they're where judgment enters the
+  model, and writing them down forces that judgment to be explicit.
+- **Compared against an equal-weight baseline** throughout, because any
+  allocation method that can't beat 1/N is an expensive way to be average.
+
+<Chart
+  name="allocation"
+  label="Even split vs. optimizer"
+  caption="Even split versus the optimizer's allocation under the same constraints. The optimizer's answer is less balanced and better — and it only moves where the predicted edge survives the risk penalty."
+/>
+
+{/* TODO(raymond): replace with your real allocations and the realized
+    performance vs. equal-weight (content/chart-data.ts). */}
+
+## Impact
+
+A working two-stage pipeline where the forecast and the decision are separately
+inspectable, which is what makes it trustworthy enough to act on.
+
+The more durable result was learning to read the optimizer's dual values. When a
+constraint binds, the shadow price tells you what relaxing it is worth — which
+converts "can I have more budget?" from an argument into a number.
+
+{/* TODO(raymond): add realized vs. equal-weight performance and the
+    Sharpe or risk-adjusted figure if you computed one. */}
+
+## What a marketer would do with this
+
+**This is media-mix optimization.** Swap assets for channels, expected return
+for predicted incremental revenue, and the covariance matrix for channel
+overlap, and the formulation is unchanged. Most budget allocation happens in a
+meeting where the loudest channel owner wins; this is the alternative.
+
+**Encode the real constraints.** Brand needs a floor regardless of
+last-click performance. Paid search has a ceiling where it stops being
+incremental and starts harvesting demand you already own. Nobody can
+triple a channel in one quarter — that's a turnover limit. Write those down and
+the optimizer stops producing answers your team would never execute.
+
+**Use the shadow prices to argue for budget.** The dual on your total-budget
+constraint is the marginal return on the next dollar. That is a far stronger
+case to a CFO than a deck full of channel ROAS, because it answers the only
+question they're asking: what does the *next* dollar buy.

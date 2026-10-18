@@ -1,0 +1,334 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+   "Signal" palette — black, grey, white, one red.
+   --accent for fills and display; --accent-fg for body-size links (WCAG AA).
+--------------------------------------------------------------------------- */
+:root {
+  --bg: #f4f4f5;
+  --surface: #ffffff;
+  --surface-sunk: #e4e4e7;
+  --fg: #0a0a0a;
+  --fg-muted: #52525b;
+  --line: #d4d4d8;
+  --line-strong: #a1a1aa;
+  --accent: #e10600;
+  --accent-fg: #c10000;
+  --accent-contrast: #ffffff;
+  --accent-wash: #e1060014;
+
+  --chart-1: #e10600;
+  --chart-2: #52525b;
+  --chart-3: #a1a1aa;
+  --chart-4: #71717a;
+  --chart-5: #0a0a0a;
+  --chart-grid: #d4d4d8;
+  --chart-band: rgb(225 6 0 / 0.13);
+  --chart-band-legend: rgb(225 6 0 / 0.35);
+}
+
+.dark {
+  --bg: #050505;
+  --surface: #111111;
+  --surface-sunk: #0a0a0a;
+  --fg: #fafafa;
+  --fg-muted: #a1a1aa;
+  --line: #262626;
+  --line-strong: #3f3f46;
+  --accent: #ff2b2b;
+  --accent-fg: #ff4d4d;
+  --accent-contrast: #ffffff;
+  --accent-wash: #ff2b2b1a;
+
+  --chart-1: #ff2b2b;
+  --chart-2: #d4d4d8;
+  --chart-3: #a1a1aa;
+  --chart-4: #71717a;
+  --chart-5: #fafafa;
+  --chart-grid: #262626;
+  --chart-band: rgb(255 43 43 / 0.16);
+  --chart-band-legend: rgb(255 43 43 / 0.5);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-sunk: var(--surface-sunk);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-accent-wash: var(--accent-wash);
+
+  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --breakpoint-xs: 25rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss03";
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Fluid editorial display type. */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  .display-xl {
+    font-size: clamp(2.75rem, 7.5vw, 7.5rem);
+  }
+
+  .display-lg {
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+  }
+
+  .display-md {
+    font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+
+  .lede {
+    font-size: clamp(1.0625rem, 1.6vw, 1.3125rem);
+    line-height: 1.6;
+    color: var(--fg-muted);
+    text-wrap: pretty;
+  }
+
+  .shell {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  @media (min-width: 64rem) {
+    .shell {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  .section {
+    padding-block: clamp(5rem, 11vw, 10rem);
+  }
+
+  /* Fine film grain over photography and large flats. */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .dark .grain::after {
+    opacity: 0.09;
+  }
+
+  .hairline {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      var(--line-strong),
+      var(--line) 40%,
+      transparent
+    );
+  }
+}
+
+/* Prose styles for MDX case-study bodies. */
+.prose-editorial {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--fg-muted);
+}
+
+.prose-editorial > * + * {
+  margin-top: 1.25em;
+}
+
+.prose-editorial h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.625rem, 2.6vw, 2.125rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  margin-top: 2.75em;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.prose-editorial h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.prose-editorial h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fg);
+  margin-top: 2em;
+}
+
+.prose-editorial strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.prose-editorial a {
+  color: var(--accent-fg);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* Direct-child scoping only: components rendered inside MDX (chart legends,
+   stack chips) use their own <ul>, and these rules would otherwise reflow them
+   into a column and stamp an accent dash on every row. */
+.prose-editorial > ul,
+.prose-editorial > ol,
+.prose-editorial li > ul,
+.prose-editorial li > ol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding-left: 1.125rem;
+}
+
+.prose-editorial > ul,
+.prose-editorial li > ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.prose-editorial > ul > li,
+.prose-editorial li > ul > li {
+  position: relative;
+  padding-left: 1.375rem;
+}
+
+.prose-editorial > ul > li::before,
+.prose-editorial li > ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0.125rem;
+  top: 0.7em;
+  width: 0.4375rem;
+  height: 1px;
+  background-color: var(--accent);
+}
+
+.prose-editorial > ol,
+.prose-editorial li > ol {
+  list-style: decimal;
+}
+
+.prose-editorial > ol > li::marker {
+  font-family: var(--font-mono);
+}
+
+.prose-editorial blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 1.25rem;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  line-height: 1.4;
+  color: var(--fg);
+}
+
+.prose-editorial code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background-color: var(--surface-sunk);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+  color: var(--fg);
+}
+
+.prose-editorial table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.prose-editorial th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  padding: 0.75rem 0.75rem 0.75rem 0;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.prose-editorial td {
+  padding: 0.75rem 0.75rem 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
