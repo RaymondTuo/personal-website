@@ -1,3 +1,4 @@
+import { Expandable } from "@/components/expandable";
 import { PhotoBackdrop } from "@/components/photo-backdrop";
 import { Reveal } from "@/components/reveal";
 
@@ -25,31 +26,42 @@ export function Bilingual() {
 
           <Reveal delay={0.1}>
             <div className="max-w-2xl rounded-xl border border-line bg-bg/70 p-6 backdrop-blur-md sm:p-8">
-              <h2 className="display display-md text-balance">
-                The useful part isn&rsquo;t the translation. It&rsquo;s knowing
-                the same campaign needs a different shape in each market.
-              </h2>
-
-              <div className="mt-7 flex flex-col gap-5 text-[1.0625rem] leading-relaxed text-fg-muted">
-                <p>
-                  Chinese consumers meet brands inside WeChat and 小红书, where
-                  content <em className="italic">is</em> the channel and a
-                  five-star review is assumed to be paid for until proven
-                  otherwise. US consumers arrive from search and email and
-                  extend the opposite benefit of the doubt. Same product, same
-                  price, two completely different trust problems.
-                </p>
-                <p>
-                  I work in both markets, which means every positioning and
-                  measurement decision gets stress-tested twice before I would
-                  ship it.
-                </p>
-                <p>
-                  I&rsquo;ve also spent three years as the person translating
-                  between the technical room and the room that owns the budget.
-                  Working across markets is the same skill with a wider gap.
-                </p>
-              </div>
+              <Expandable
+                label="Bilingual edge"
+                summary={
+                  <span
+                    role="heading"
+                    aria-level={2}
+                    className="display display-md block text-balance pr-4"
+                  >
+                    The useful part isn&rsquo;t the translation. It&rsquo;s
+                    knowing the same campaign needs a different shape in each
+                    market.
+                  </span>
+                }
+              >
+                <div className="flex flex-col gap-5 text-[1.0625rem] leading-relaxed text-fg-muted">
+                  <p>
+                    Chinese consumers meet brands inside WeChat and 小红书, where
+                    content <em className="italic">is</em> the channel and a
+                    five-star review is assumed to be paid for until proven
+                    otherwise. US consumers arrive from search and email and
+                    extend the opposite benefit of the doubt. Same product, same
+                    price, two completely different trust problems.
+                  </p>
+                  <p>
+                    I work in both markets, which means every positioning and
+                    measurement decision gets stress-tested twice before I would
+                    ship it.
+                  </p>
+                  <p>
+                    I&rsquo;ve also spent three years as the person translating
+                    between the technical room and the room that owns the
+                    budget. Working across markets is the same skill with a
+                    wider gap.
+                  </p>
+                </div>
+              </Expandable>
             </div>
           </Reveal>
         </div>

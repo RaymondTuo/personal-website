@@ -1,3 +1,4 @@
+import { Expandable } from "@/components/expandable";
 import { Reveal } from "@/components/reveal";
 import { Chip, SectionHeading } from "@/components/ui";
 
@@ -84,21 +85,35 @@ export function Toolkit() {
         <div className="mt-16 flex flex-col md:mt-20">
           {groups.map((group, i) => (
             <Reveal key={group.name} delay={i * 0.05}>
-              <div className="grid gap-x-10 gap-y-5 border-t border-line py-8 md:grid-cols-[14rem_1fr]">
-                <div className="flex items-baseline gap-3">
-                  <span className="eyebrow text-accent-fg">{group.index}</span>
-                  <div>
-                    <h3 className="display text-2xl">{group.name}</h3>
-                    <p className="mt-1 font-mono text-[0.6875rem] tracking-wide text-fg-muted uppercase">
-                      {group.note}
-                    </p>
-                  </div>
-                </div>
-                <ul className="flex flex-wrap content-start gap-2">
-                  {group.tools.map((tool) => (
-                    <Chip key={tool}>{tool}</Chip>
-                  ))}
-                </ul>
+              <div className="border-t border-line py-8">
+                <Expandable
+                  label={group.name}
+                  summary={
+                    <div className="flex items-baseline gap-3 pr-12">
+                      <span className="eyebrow text-accent-fg">
+                        {group.index}
+                      </span>
+                      <div>
+                        <span
+                          role="heading"
+                          aria-level={3}
+                          className="display block text-2xl"
+                        >
+                          {group.name}
+                        </span>
+                        <p className="mt-1 font-mono text-[0.6875rem] tracking-wide text-fg-muted uppercase">
+                          {group.note}
+                        </p>
+                      </div>
+                    </div>
+                  }
+                >
+                  <ul className="flex flex-wrap content-start gap-2 md:pl-[4.25rem]">
+                    {group.tools.map((tool) => (
+                      <Chip key={tool}>{tool}</Chip>
+                    ))}
+                  </ul>
+                </Expandable>
               </div>
             </Reveal>
           ))}

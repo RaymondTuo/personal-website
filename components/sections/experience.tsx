@@ -1,3 +1,4 @@
+import { Expandable } from "@/components/expandable";
 import { Reveal } from "@/components/reveal";
 import { SectionHeading } from "@/components/ui";
 
@@ -69,30 +70,41 @@ export function Experience() {
         <ol className="mt-16 md:mt-20">
           {timeline.map((entry, i) => (
             <Reveal as="li" key={entry.org} delay={i * 0.06}>
-              <article className="group grid gap-x-12 gap-y-5 border-t border-line py-10 md:grid-cols-[13rem_1fr] md:py-12">
-                <div className="flex items-start gap-3">
-                  <span
-                    aria-hidden="true"
-                    className={`mt-[0.45rem] size-1.5 shrink-0 rounded-full ${
-                      entry.current ? "bg-accent" : "bg-line-strong"
-                    }`}
-                  />
-                  <div>
-                    <p className="eyebrow">{entry.period}</p>
-                    <p className="mt-2 font-mono text-[0.6875rem] tracking-wide text-fg-muted/70 uppercase">
-                      {entry.place}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="display display-md text-balance">
-                    {entry.role}
-                  </h3>
-                  <p className="mt-2 text-sm font-medium text-accent-fg">
-                    {entry.org}
-                  </p>
-                  <ul className="mt-6 flex flex-col gap-4">
+              <article className="border-t border-line py-10 md:py-12">
+                <Expandable
+                  label={entry.role}
+                  summary={
+                    <div className="grid gap-x-12 gap-y-5 pr-12 md:grid-cols-[13rem_1fr]">
+                      <div className="flex items-start gap-3">
+                        <span
+                          aria-hidden="true"
+                          className={`mt-[0.45rem] size-1.5 shrink-0 rounded-full ${
+                            entry.current ? "bg-accent" : "bg-line-strong"
+                          }`}
+                        />
+                        <div>
+                          <p className="eyebrow">{entry.period}</p>
+                          <p className="mt-2 font-mono text-[0.6875rem] tracking-wide text-fg-muted/70 uppercase">
+                            {entry.place}
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <span
+                          role="heading"
+                          aria-level={3}
+                          className="display display-md block text-balance"
+                        >
+                          {entry.role}
+                        </span>
+                        <p className="mt-2 text-sm font-medium text-accent-fg">
+                          {entry.org}
+                        </p>
+                      </div>
+                    </div>
+                  }
+                >
+                  <ul className="flex flex-col gap-4 md:pl-[calc(13rem+3rem)]">
                     {entry.bullets.map((bullet) => (
                       <li
                         key={bullet}
@@ -106,7 +118,7 @@ export function Experience() {
                       </li>
                     ))}
                   </ul>
-                </div>
+                </Expandable>
               </article>
             </Reveal>
           ))}

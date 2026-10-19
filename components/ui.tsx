@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { Expandable } from "@/components/expandable";
 
 export function SectionHeading({
   index,
@@ -21,7 +22,18 @@ export function SectionHeading({
         <span className="eyebrow">{eyebrow}</span>
       </div>
       <h2 className="display display-lg mt-5 max-w-3xl">{title}</h2>
-      {lede && <p className="lede mt-5 max-w-2xl">{lede}</p>}
+      {lede && (
+        <Expandable
+          className="mt-5"
+          compact
+          label={`${eyebrow} context`}
+          summary={
+            <span className="eyebrow text-accent-fg">More context</span>
+          }
+        >
+          <p className="lede">{lede}</p>
+        </Expandable>
+      )}
     </div>
   );
 }

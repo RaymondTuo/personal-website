@@ -1,3 +1,4 @@
+import { Expandable } from "@/components/expandable";
 import { PhotoBackdrop } from "@/components/photo-backdrop";
 import { Reveal } from "@/components/reveal";
 import { ArrowRight, ButtonAnchor } from "@/components/ui";
@@ -30,12 +31,21 @@ export function Contact() {
         </Reveal>
 
         <Reveal delay={0.12}>
-          <p className="lede mt-7 max-w-xl">
-            I&rsquo;m looking for a role where marketing judgment and
-            model-building sit in the same job description — ideally somewhere
-            that would rather know the real lift than the flattering one. Email
-            is the fastest way to reach me, and I answer everything.
-          </p>
+          <Expandable
+            className="mt-7 max-w-xl"
+            compact
+            label="what I'm looking for"
+            summary={
+              <span className="eyebrow text-accent-fg">More context</span>
+            }
+          >
+            <p className="lede">
+              I&rsquo;m looking for a role where marketing judgment and
+              model-building sit in the same job description — ideally somewhere
+              that would rather know the real lift than the flattering one.
+              Email is the fastest way to reach me, and I answer everything.
+            </p>
+          </Expandable>
         </Reveal>
 
         <Reveal delay={0.18}>
